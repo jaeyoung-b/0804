@@ -22,5 +22,39 @@ for movie in movie_a:
     }
 
     movie_list.append(movie_data)
+ 
+for movie in movie_list:
+    movie_code = movie['code']
 
-print(movie_list)
+    import requests
+
+    params = (
+        ('code', movie_code),
+        ('type', 'after'),
+        ('isActualPointWriteExecute', 'false'),
+        ('isMileageSubscriptionAlready', 'false'),
+        ('isMileageSubscriptionReject', 'false'),
+    )
+
+    response = requests.get('https://movie.naver.com/movie/bi/mi/pointWriteFormList.nhn', params=params)
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    review_list = soup.select('body > div > div > div.score_result > ul > li')
+
+    count = 0
+
+    for review in review_list:
+        star_score = review.select_one('div.star_score > em').text
+        scorer_reple = ''
+
+        if review.select_one(f'#_unfold_ment{count}') is None:
+            score_reple = review.select_one(
+                f'div.score_reple > p > span#_filtered_ment_{count}').text.strip()
+       
+        else:
+            score_reple = review.select_one(
+                f'div.score_reple > p > span#_filtered_ment_{count} > span > a')['data-src']
+
+        print(star_score, score_reple)
+
+        count += 1
